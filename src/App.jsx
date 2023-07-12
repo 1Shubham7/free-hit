@@ -1,13 +1,12 @@
 import React, { useState, useEffect, createContext } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Card from './pages/Home'
-import Footer from './components/Footer'
 import About from './pages/About'
-import products from './DB/product.json'
 import BookMarks from './pages/Bookmarks'
-import BackToTopButton from './components/BackToTop'
 import NotFound from './pages/NotFound'
 import Community from './pages/Community'
+import Layout from './components/Layout'
+import {Analytics} from '@vercel/analytics/react'
 
 const ToolContext = createContext()
 const LOCAL_STORAGE_KEY = 'freehit.bookmarks'
@@ -17,6 +16,9 @@ function App() {
 
   // all Bookmarks
   const [bookmarks, setBookmarks] = useState([])
+
+  // dark mode
+  const [darkMode, setDarkMode] = useState(localStorage.getItem("darkMode") || false);
 
   // initial Storage
   useEffect(() => {
@@ -29,6 +31,20 @@ function App() {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(bookmarks))
   }, [bookmarks])
 
+  //dark-mode
+  useEffect(() => {
+    const darkmodejson = localStorage.getItem("darkMode")
+    if (darkmodejson != null) setDarkMode(JSON.parse(darkmodejson))
+    // else setDarkMode([])
+  }, [])
+  
+  useEffect(() => {
+    localStorage.setItem("darkMode", JSON.stringify(darkMode))
+  }, [darkMode])
+
+  
+  
+
   // Add bookmark
   function handelBookmarkAdd(bookmark) {
     const newBookmark = {
@@ -40,6 +56,8 @@ function App() {
     }
     setBookmarks([...bookmarks, newBookmark])
   }
+
+  
 
   // Remove Bookmark
   function deleteres(product) {
@@ -55,28 +73,28 @@ function App() {
     deleteres,
     gridView,
     setGridView,
+    darkMode,
+    setDarkMode
   }
 
   return (
     <>
-     <div className="app">
-     <ToolContext.Provider value={toolContextValue}>
-        <div className="routes-holder">
-          <Routes>
-          <Route path="/" element={<Card />} />
-          <Route path="/about" element={<About />} />
-          <Route
-            path="/bookmarks"
-            element={<BookMarks />}
-          />
-          <Route path="/community" element={<Community />} />
-          <Route path="*" element={<NotFound />} />
-          </Routes>
-        </div>
-        <Footer />
-        <BackToTopButton />
-      </ToolContext.Provider>
+      <div className="app">
+        <ToolContext.Provider value={toolContextValue}>
+          <div className="routes-holder">
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Card />} />
+                  <Route path="about" element={<About />} />
+                  <Route path="bookmarks" element={<BookMarks />} />
+                  <Route path="community" element={<Community />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+              </Routes>
+          </div>
+        </ToolContext.Provider>
       </div>
+      <Analytics/>
     </>
   )
 }
